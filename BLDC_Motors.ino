@@ -1,29 +1,73 @@
 #include <Servo.h>
 
-//Motor state declarations
-enum MotorStates {INIT, WAIT, INCREASE, DECREASE, MOTOR_SELECT};
-MotorStates motorstate = INIT; 
+#define escPin1         6     //Arduino Nano Pin 6  (PWM)
+#define escPin2         9     //Arduino Nano Pin 9  (PWM)
+#define escPin3         10    //Arduino Nano Pin 10 (PWM)
+#define escPin4         11    //Arduino Nano Pin 11 (PWM)
+#define minPulseRate    1000  //Min Pulse Width of PWM
+#define maxPulseRate    2000  //Max Pulse Width of PWM
+#define minThrottle     0     //Min Value for Throttle (Maps to Min Pulse Width)
+#define maxThrottle     180   //Max value for Throttle (Maps to Max Pulse Width)
 
-//Create ESC objects
+unsigned long chrono = millis();  //timer
+uint8_t throttle;                 //motor throttle value
+
+/*Motor state declarations*/
+enum MotorStates {INIT, WAIT, INCREASE, DECREASE, MOTOR_SELECT};
+MotorStates motorState = INIT; 
+
+/*Create ESC objects*/
 Servo ESC1;
 Servo ESC2;
 Servo ESC3;
 Servo ESC4;
 
-//ESC pins, PWM pins on Arduino Nano
-uint8_t escPin1 = 6;
-uint8_t escPin1 = 9;
-uint8_t escPin1 = 10;
-uint8_t escPin1 = 11;
+/*Initializes ESCs*/
+void initEsc();
 
-//Min/Max pulse frequency of PWM 
+/*Rev up them fryers*/
+void StartUp();
+
+/*Read current value of motor throttle*/
+void readThrottle(uint8_t motor);
+
+/*Change value of motor throttle*/
+void changeThrottle(uint8_t motor,uint8_t throttleValue);
+
+/*Motor State Machine*/
+void motorSM(uint8_t throttle){
+  switch(motorState){
+    case INIT: {
+      break;
+    }
+    case WAIT:{
+      break;
+    }
+    case INCREASE: {
+      break;
+    }
+    case DECREASE: {
+      break;
+    }
+    case MOTOR_SELECT: {
+      break;
+    }
+  }
+}
 
 void setup() {
-  // put your setup code here, to run once:
-
+  Serial.begin(9600);
+  initEsc();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  motorSM(throttle);
 }
+
+void initEsc(){
+  ESC1.attach(escPin1, minPulseRate, maxPulseRate);
+  ESC2.attach(escPin2, minPulseRate, maxPulseRate);
+  ESC3.attach(escPin3, minPulseRate, maxPulseRate);
+  ESC4.attach(escPin4, minPulseRate, maxPulseRate);
+  return; 
+};
