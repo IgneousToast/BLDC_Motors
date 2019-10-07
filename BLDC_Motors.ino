@@ -10,13 +10,17 @@
 #define maxThrottle     180   //Max value for Throttle (Maps to Max Pulse Width)
 #define throttleDelay   50    //Delay value in millisec when adjusting motor speed
 
-unsigned long timer = millis();   //Timer
-uint8_t throttle = 0;                 //Motor throttle value
-uint8_t stepValue = 25;                //Throttle Step Value
+unsigned long timer = millis();         //Timer
+uint8_t throttle = 0;                   //Sets Motor Throttle value
+uint8_t stepValue = 25;                 //Throttle Step Value
+uint8_t motorsThrottle[4] = {0,0,0,0};  //Actual Throttle Value
+bool startUpFlag  = false;              //Determining Initial ramping up of motors
+
+//uint16_t cnt = 0; 
 
 /*Motor state declarations*/
 enum MotorStates {INIT, WAIT, INCREASE, DECREASE, MOTOR_SELECT};
-MotorStates motorState = INIT; 
+MotorStates motorState = WAIT; 
 
 /*Create ESC objects*/
 Servo ESC1;
@@ -42,38 +46,46 @@ void readThrottle(uint8_t motor);
 /*Change value of motor throttle*/
 void changeThrottle(uint8_t motor,uint8_t throttleValue);
 
+/* Code to flush serial buffer*/
+void Sflush();
+
 /*Motor State Machine*/
 void motorSM(uint8_t throttle){
   switch(motorState){
-    case INIT: {
-      initEsc();
+    //Buffer State in case keyboard button is held. 
+    case INIT: 
       motorState = WAIT;
       break;
     }
+    
+    //Wait for user input
+    //If user input is read, switch to appropriate state
     case WAIT:{
-      //Wait for user input
-      //if user input is read, switch to appropriate state
-      if(Serial.available() > 0){
-        if(readUserInput() == 'W'){
-          motorState = INCREASE;  
-        }
-        else if(readUserInput() == 'S'){
-          motorState = DECREASE;  
-        }
-        else if((readUserInput() == 'A')||(readUserInput() == 'D')){
-          motorState = MOTOR_SELECT;  
-        }
-        else if(readUserInput() == 'E'){
-          motorState = WAIT;  
-        }
+      char key = ' ';
+      key = readUserInput();
+      if(key == 'W'){
+        motorState = INCREASE;  
+      }
+      else if(key == 'S'){
+        motorState = DECREASE;  
+      }
+      else if((key == 'A')||(key == 'D')){
+        motorState = MOTOR_SELECT;  
+      }
+      else if(key == 'E'){
+        motorState = WAIT;  
       }
       break;
     }
     case INCREASE: {
-      Serial.print("I am in increase state! ");
+      
+      
+      /*Serial.print("I am in increase state! ");
       Serial.println();
       Serial.print("Going to Wait now :)");
       Serial.println();
+      cnt += 1;
+      */
       motorState = WAIT;
       break;
     }
@@ -82,6 +94,7 @@ void motorSM(uint8_t throttle){
       Serial.println();
       Serial.print("Going to Wait now :)");
       Serial.println();
+       cnt += 1;
       motorState = WAIT;
       break;
     }
@@ -90,6 +103,7 @@ void motorSM(uint8_t throttle){
       Serial.println();
       Serial.print("Going to Wait now :)");
       Serial.println();
+       cnt += 1;
       motorState = WAIT;
       break;
     }
@@ -97,7 +111,8 @@ void motorSM(uint8_t throttle){
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  initEsc();
   prompt(); 
 }
 
@@ -132,15 +147,19 @@ char readUserInput(){
 
   if(Serial.available() > 0 ) {
     incomingData = Serial.read();
-  } else {
+  } 
+  else { //idk if you need this statement?
     return 'E';  
   }
-  // for whatever reason fails to read, return E
+  
+  //If for whatever reason it fails to read, return E
   if(incomingData == -1) {
     Serial.print("failed");
     return 'E';
   }
   
+  Serial.print(cnt);
+  Serial.print(": ");
   Serial.print(incomingData);
   Serial.println();
 
@@ -182,5 +201,5 @@ void readThrottle(){
 void Sflush(){
   while(Serial.available()) {
     Serial.read();
-}  
+  }  
 }
