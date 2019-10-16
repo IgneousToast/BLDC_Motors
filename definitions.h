@@ -20,8 +20,8 @@ char readUserInput();
 /*Rev up them fryers*/
 void StartUp();
 
-/*Read current value of motor throttle*/
-uint8_t readThrottle(uint8_t motorThrottles[], uint8_t selectMotor);
+/*Store current values of motor throttle*/
+void storeThrottle(uint8_t selectMotor);
 
 /*Change value of motor throttle*/
 void changeThrottle(uint8_t motor,uint8_t throttleValue);
